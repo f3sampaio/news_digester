@@ -2,7 +2,7 @@
   "name": "news_digester",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/main/main.js",
+  "main": "dist/infrastructure/electron/main.js",
   "scripts": {
     "build": "tsc",
     "start": "npm run build && electron .",
@@ -30,6 +30,7 @@
     "files": [
       "dist/**/*",
       "index.html",
+      "src/presentation/views/**/*",
       "package.json"
     ],
     "win": {

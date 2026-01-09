@@ -1,0 +1,22 @@
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Reddit Configuration</h5>
+    <div class="mb-3">
+      <label for="reddit-subreddit" class="form-label">Subreddit</label>
+      <input type="text" class="form-control" id="reddit-subreddit" placeholder="Enter subreddit name (e.g., programming)" required>
+    </div>
+    <div class="mb-3">
+      <label for="reddit-sort" class="form-label">Sort By</label>
+      <select class="form-select" id="reddit-sort" required>
+        <option value="hot">Hot</option>
+        <option value="new">New</option>
+        <option value="top">Top</option>
+        <option value="rising">Rising</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="reddit-limit" class="form-label">Number of Posts</label>
+      <input type="number" class="form-control" id="reddit-limit" value="25" min="1" max="100" required>
+    </div>
+  </div>
+</div>

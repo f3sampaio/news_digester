@@ -70,9 +70,9 @@ This ensures that:
 
 Each class has one reason to change:
 
-- `WindowManager`: Only manages Electron windows
-- `AppController`: Only controls application lifecycle
-- `MainView`: Only handles view rendering
+- `AppController`: Only handles UI interactions and form logic
+- `main.ts`: Only manages Electron window creation and lifecycle
+- HTML views: Only define platform configuration forms
 - `IRepository<T>`: Only defines data access contract
 
 ### 2. Open/Closed Principle (OCP)
@@ -179,13 +179,10 @@ Depend on abstractions, not concretions:
 **Components**:
 
 #### Electron (`electron/`)
-- **WindowManager**: Manages Electron BrowserWindow instances
-  - Creates, stores, and manages windows
-  - Handles window lifecycle
-
-- **AppController**: Controls Electron application lifecycle
-  - Handles app ready, window-all-closed, activate events
-  - Initializes the application
+- **main.ts**: Electron main process entry point
+  - Creates and manages BrowserWindow instances
+  - Handles application lifecycle (ready, window-all-closed, activate events)
+  - Loads the main HTML file
 
 #### Preload (`preload/`)
 - **preload.ts**: Secure IPC bridge between main and renderer processes
@@ -210,16 +207,20 @@ Depend on abstractions, not concretions:
 **Components**:
 
 #### Views (`views/`)
-- **MainView**: Renders UI components
-  - Manages DOM manipulation
-  - Handles view updates
-  - Separated from business logic
+- **HTML Templates**: Platform-specific configuration forms
+  - `facebook.html` - Facebook scraper configuration
+  - `instagram.html` - Instagram scraper configuration
+  - `reddit.html` - Reddit scraper configuration
+  - `twitter.html` - Twitter/X scraper configuration
+  - Pure HTML files, loaded dynamically via fetch
+  - Separated from TypeScript logic
 
 #### Controllers (`controllers/`)
-- **ViewController**: Base class for view controllers
-  - Handles user interactions
-  - Coordinates between views and application services
-  - Manages view state
+- **AppController**: Main UI controller
+  - Handles form interactions and platform selection
+  - Manages dynamic loading of platform configuration forms
+  - Coordinates form submission and scraping initiation
+  - Manages UI state and results display
 
 **Key Characteristics**:
 - ✅ UI-specific code
@@ -229,17 +230,17 @@ Depend on abstractions, not concretions:
 
 ### Entry Points
 
-#### Main Process (`src/main/`)
+#### Main Process (`src/infrastructure/electron/main.ts`)
 - **main.ts**: Electron main process entry point
-- Initializes infrastructure components
-- Sets up dependency injection
-- Starts the application
+- Creates BrowserWindow instances
+- Handles Electron application lifecycle
+- Loads `index.html` which serves as the renderer entry point
 
-#### Renderer Process (`src/renderer/`)
-- **renderer.ts**: Electron renderer process entry point
-- Initializes UI components
-- Sets up view controllers
-- Handles DOM ready events
+#### Renderer Process (`index.html` → `dist/presentation/controllers/AppController.js`)
+- **index.html**: Main HTML entry point with form UI
+- **AppController.ts**: Compiled to JavaScript and loaded in the browser
+- Initializes UI controller when DOM is ready
+- Handles all user interactions and form logic
 
 ## Data Flow
 
@@ -340,12 +341,8 @@ User Display
    ```
 
 4. **Presentation Layer**: Create UI
-   ```typescript
-   // src/presentation/views/TwitterView.ts
-   export class TwitterView {
-     // UI for Twitter scraping
-   }
-   ```
+   - Add HTML form: `src/presentation/views/twitter.html`
+   - Update `AppController.ts` to handle the new platform's form data
 
 ## Testing Strategy
 
@@ -364,6 +361,65 @@ Each layer can be tested independently:
 4. **Scalability**: Easy to add new features
 5. **Framework Independence**: Core logic doesn't depend on Electron
 6. **Team Collaboration**: Different teams can work on different layers
+
+## Current Project Structure
+
+```
+news_digester/
+├── src/
+│   ├── domain/                    # Domain Layer (Core Business Logic)
+│   │   ├── entities/              # Domain entities
+│   │   │   └── BaseEntity.ts
+│   │   ├── interfaces/            # Repository and service interfaces
+│   │   │   ├── IRepository.ts
+│   │   │   └── IService.ts
+│   │   └── usecases/              # Business logic use cases
+│   │       └── ExampleUseCase.ts
+│   │
+│   ├── application/               # Application Layer
+│   │   ├── dto/                   # Data Transfer Objects
+│   │   │   └── BaseDTO.ts
+│   │   └── services/              # Application services
+│   │       └── ExampleService.ts
+│   │
+│   ├── infrastructure/            # Infrastructure Layer
+│   │   └── electron/              # Electron-specific implementations
+│   │       ├── main.ts            # Electron main process entry point
+│   │       └── preload/
+│   │           └── preload.ts    # Preload scripts for secure IPC
+│   │
+│   ├── presentation/              # Presentation Layer
+│   │   ├── controllers/          # View controllers
+│   │   │   └── AppController.ts  # Main UI controller
+│   │   └── views/                 # HTML view templates
+│   │       ├── facebook.html
+│   │       ├── instagram.html
+│   │       ├── reddit.html
+│   │       └── twitter.html
+│   │
+│   └── types/                     # TypeScript type definitions
+│       └── electron.d.ts
+│
+├── dist/                          # Compiled JavaScript (generated)
+├── index.html                     # Main HTML entry point
+├── package.json                   # Dependencies and scripts
+├── tsconfig.json                  # TypeScript configuration
+└── README.md                      # Project documentation
+```
+
+## File Organization Rules
+
+1. **Domain Layer**: Pure TypeScript, no framework dependencies
+2. **Application Layer**: Depends only on Domain
+3. **Infrastructure Layer**: Implements Domain interfaces, uses Electron
+4. **Presentation Layer**: HTML and UI logic, depends on Application/Domain
+
+## Build Output
+
+- TypeScript files compile to `dist/` maintaining the same structure
+- HTML files remain in `src/presentation/views/` (not compiled)
+- Main entry point: `dist/infrastructure/electron/main.js`
+- Renderer entry point: `index.html` loads `dist/presentation/controllers/AppController.js`
 
 ## Future Enhancements
 
