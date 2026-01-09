@@ -1,0 +1,50 @@
+{
+  "name": "news_digester",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && electron .",
+    "dev": "tsc && electron .",
+    "build:win": "npm run build && electron-builder --win",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:linux": "npm run build && electron-builder --linux",
+    "build:all": "npm run build && electron-builder --win --mac --linux"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "typescript": "^5.3.0"
+  },
+  "build": {
+    "appId": "com.newsdigester.app",
+    "productName": "News Digester",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "index.html",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns",
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icon.png",
+      "category": "Utility"
+    }
+  }
+}
